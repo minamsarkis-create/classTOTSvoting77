@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>TOTS Voting</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: linear-gradient(#0a0a0a, #001f3f);
+      color: white;
+      text-align: center;
+    }
+
+    h1 {
+      color: gold;
+      margin-top: 20px;
+    }
+
+    input {
+      padding: 10px;
+      margin: 5px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    .pitch {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .line {
+      display: flex;
+      justify-content: center;
+      margin: 10px;
+    }
+
+    .slot {
+      width: 110px;
+      height: 150px;
+      border: 2px dashed white;
+      margin: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .card {
+      width: 110px;
+      height: 150px;
+      background: #111;
+      border: 2px solid #555;
+      margin: 5px;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .players {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 15px 25px;
+      background: gold;
+      border: none;
+      cursor: pointer;
+      margin: 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Team of the Season Voting</h1>
+
+<input id="firstName" placeholder="First Name">
+<input id="lastName" placeholder="Last Name">
+
+<div class="pitch">
+
+  <div class="line">
+    <div class="slot" data-pos="GK">GK</div>
+  </div>
+
+  <div class="line">
+    <div class="slot" data-pos="DEF"></div>
+    <div class="slot" data-pos="DEF"></div>
+    <div class="slot" data-pos="DEF"></div>
+  </div>
+
+  <div class="line">
+    <div class="slot" data-pos="MID"></div>
+    <div class="slot" data-pos="MID"></div>
+    <div class="slot" data-pos="MID"></div>
+  </div>
+
+  <div class="line">
+    <div class="slot" data-pos="ATT"></div>
+    <div class="slot" data-pos="ATT"></div>
+    <div class="slot" data-pos="ATT"></div>
+  </div>
+
+</div>
+
+<h2>Players</h2>
+<div id="players" class="players"></div>
+
+<button onclick="submitVote()">Submit Vote</button>
+
+<script>
+// PLAYER LIST
+const players = [
+  {name:"GK 1", pos:"GK"}, {name:"GK 2", pos:"GK"},
+
+  {name:"DEF 1", pos:"DEF"}, {name:"DEF 2", pos:"DEF"},
+  {name:"DEF 3", pos:"DEF"}, {name:"DEF 4", pos:"DEF"},
+  {name:"DEF 5", pos:"DEF"}, {name:"DEF 6", pos:"DEF"},
+
+  {name:"MID 1", pos:"MID"}, {name:"MID 2", pos:"MID"},
+  {name:"MID 3", pos:"MID"}, {name:"MID 4", pos:"MID"},
+  {name:"MID 5", pos:"MID"}, {name:"MID 6", pos:"MID"},
+
+  {name:"ATT 1", pos:"ATT"}, {name:"ATT 2", pos:"ATT"},
+  {name:"ATT 3", pos:"ATT"}, {name:"ATT 4", pos:"ATT"},
+  {name:"ATT 5", pos:"ATT"}, {name:"ATT 6", pos:"ATT"}
+];
+
+// CREATE PLAYER CARDS
+const container = document.getElementById("players");
+
+players.forEach(p => {
+  let div = document.createElement("div");
+  div.className = "card";
+  div.innerText = p.name;
+  div.draggable = true;
+  div.dataset.pos = p.pos;
+
+  div.ondragstart = e => {
+    e.dataTransfer.setData("text", JSON.stringify(p));
+  };
+
+  container.appendChild(div);
+});
+
+// DRAG & DROP LOGIC
+document.querySelectorAll(".slot").forEach(slot => {
+  slot.ondragover = e => e.preventDefault();
+
+  slot.ondrop = e => {
+    let data = JSON.parse(e.dataTransfer.getData("text"));
+
+    if (slot.dataset.pos !== data.pos) {
+      alert("Wrong position!");
+      return;
+    }
+
+    slot.innerHTML = `<div class="card">${data.name}</div>`;
+  };
+});
+
+// SUBMIT VOTE (TEMP LOCAL VERSION)
+function submitVote() {
+  let first = document.getElementById("firstName").value.trim();
+  let last = document.getElementById("lastName").value.trim();
+
+  if (!first || !last) {
+    alert("Enter your full name!");
+    return;
+  }
+
+  let vote = { GK:[], DEF:[], MID:[], ATT:[] };
+
+  let valid = true;
+
+  document.querySelectorAll(".slot").forEach(slot => {
+    let pos = slot.dataset.pos;
+    let card = slot.querySelector(".card");
+
+    if (!card) valid = false;
+    else vote[pos].push(card.innerText);
+  });
+
+  if (!valid) {
+    alert("Complete your team!");
+    return;
+  }
+
+  // TEMP STORAGE (we connect Firebase next step)
+  let allVotes = JSON.parse(localStorage.getItem("votes") || "[]");
+
+  allVotes.push({
+    name: first + " " + last,
+    vote: vote
+  });
+
+  localStorage.setItem("votes", JSON.stringify(allVotes));
+
+  alert("Vote submitted (saved locally for now)");
+}
+</script>
+
+</body>
+</html>
