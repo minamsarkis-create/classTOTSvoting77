@@ -169,7 +169,40 @@ document.querySelectorAll(".slot").forEach(slot => {
 });
 
 // SUBMIT VOTE (TEMP LOCAL VERSION)
-function submitVote() {
+function function submitVote() {
+  let first = document.getElementById("firstName").value.trim();
+  let last = document.getElementById("lastName").value.trim();
+
+  if (!first || !last) {
+    alert("Enter your full name!");
+    return;
+  }
+
+  let vote = { GK:[], DEF:[], MID:[], ATT:[] };
+  let valid = true;
+
+  document.querySelectorAll(".slot").forEach(slot => {
+    let pos = slot.dataset.pos;
+    let card = slot.querySelector(".card");
+
+    if (!card) valid = false;
+    else vote[pos].push(card.innerText);
+  });
+
+  if (!valid) {
+    alert("Complete your team!");
+    return;
+  }
+
+  // 🔥 SAVE TO FIREBASE
+  db.collection("votes").add({
+    name: first + " " + last,
+    vote: vote,
+    time: Date.now()
+  });
+
+  alert("Vote submitted successfully!");
+} {
   let first = document.getElementById("firstName").value.trim();
   let last = document.getElementById("lastName").value.trim();
 
@@ -207,7 +240,24 @@ function submitVote() {
 
   alert("Vote submitted (saved locally for now)");
 }
-</script>
+</<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+
+<script>
+// 🔥 PASTE YOUR CONFIG HERE
+const firebaseConfig = {
+  apiKey: "PASTE_HERE",
+  authDomain: "PASTE_HERE",
+  projectId: "PASTE_HERE",
+  storageBucket: "PASTE_HERE",
+  messagingSenderId: "PASTE_HERE",
+  appId: "PASTE_HERE"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+</script>>
 
 </body>
 </html>
